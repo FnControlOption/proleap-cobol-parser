@@ -105,6 +105,7 @@ import io.proleap.cobol.asg.runner.impl.CobolParserRunnerImpl;
 import io.proleap.cobol.preprocessor.CobolPreprocessor.CobolSourceFormatEnum;
 
 import io.proleap.cobol.CobolBaseVisitor;
+import io.proleap.cobol.CobolParser.DataDescriptionEntryFormat1Context;
 import io.proleap.cobol.asg.metamodel.CompilationUnit;
 import io.proleap.cobol.asg.metamodel.data.datadescription.DataDescriptionEntry;
 
@@ -116,7 +117,7 @@ Program program = new CobolParserRunnerImpl().analyzeFile(inputFile, format);
 // traverse the AST
 CobolBaseVisitor<Boolean> visitor = new CobolBaseVisitor<Boolean>() {
   @Override
-  public Boolean visitDataDescriptionEntryFormat1(final io.proleap.cobol.CobolParser.DataDescriptionEntryFormat1Context ctx) {
+  public Boolean visitDataDescriptionEntryFormat1(final DataDescriptionEntryFormat1Context ctx) {
     DataDescriptionEntry entry = (DataDescriptionEntry) program.getASGElementRegistry().getASGElement(ctx);
     String name = entry.getName();
 
