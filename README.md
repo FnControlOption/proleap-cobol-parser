@@ -73,39 +73,58 @@ Use the following code as a starting point for developing own code.
 ### Simple: Generate an Abstract Semantic Graph (ASG) from COBOL code
 
 ```java
+import java.io.File;
+import io.proleap.cobol.asg.metamodel.Program;
+import io.proleap.cobol.asg.runner.impl.CobolParserRunnerImpl;
+import io.proleap.cobol.preprocessor.CobolPreprocessor.CobolSourceFormatEnum;
+
+import io.proleap.cobol.asg.metamodel.CompilationUnit;
+import io.proleap.cobol.asg.metamodel.ProgramUnit;
+import io.proleap.cobol.asg.metamodel.data.DataDivision;
+import io.proleap.cobol.asg.metamodel.data.datadescription.DataDescriptionEntry;
+
 // generate ASG from plain COBOL code
-java.io.File inputFile = new java.io.File("src/test/resources/io/proleap/cobol/asg/HelloWorld.cbl");
-io.proleap.cobol.preprocessor.CobolPreprocessor.CobolSourceFormatEnum format = io.proleap.cobol.preprocessor.CobolPreprocessor.CobolSourceFormatEnum.TANDEM;
-io.proleap.cobol.asg.metamodel.Program program = new io.proleap.cobol.asg.runner.impl.CobolParserRunnerImpl().analyzeFile(inputFile, format);
+File inputFile = new File("src/test/resources/io/proleap/cobol/asg/HelloWorld.cbl");
+CobolSourceFormatEnum format = CobolSourceFormatEnum.TANDEM;
+Program program = new CobolParserRunnerImpl().analyzeFile(inputFile, format);
 
 // navigate on ASG
-io.proleap.cobol.asg.metamodel.CompilationUnit compilationUnit = program.getCompilationUnit("HelloWorld");
-io.proleap.cobol.asg.metamodel.ProgramUnit programUnit = compilationUnit.getProgramUnit();
-io.proleap.cobol.asg.metamodel.data.DataDivision dataDivision = programUnit.getDataDivision();
-io.proleap.cobol.asg.metamodel.data.datadescription.DataDescriptionEntry dataDescriptionEntry = dataDivision.getWorkingStorageSection().getDataDescriptionEntry("ITEMS");
+CompilationUnit compilationUnit = program.getCompilationUnit("HelloWorld");
+ProgramUnit programUnit = compilationUnit.getProgramUnit();
+DataDivision dataDivision = programUnit.getDataDivision();
+DataDescriptionEntry dataDescriptionEntry = dataDivision.getWorkingStorageSection().getDataDescriptionEntry("ITEMS");
 Integer levelNumber = dataDescriptionEntry.getLevelNumber();
 ```
 
 ### Complex: Generate an Abstract Semantic Graph (ASG) and traverse the Abstract Syntax Tree (AST)
 
 ```java
+import java.io.File;
+import io.proleap.cobol.asg.metamodel.Program;
+import io.proleap.cobol.asg.runner.impl.CobolParserRunnerImpl;
+import io.proleap.cobol.preprocessor.CobolPreprocessor.CobolSourceFormatEnum;
+
+import io.proleap.cobol.CobolBaseVisitor;
+import io.proleap.cobol.asg.metamodel.CompilationUnit;
+import io.proleap.cobol.asg.metamodel.data.datadescription.DataDescriptionEntry;
+
 // generate ASG from plain COBOL code
-java.io.File inputFile = new java.io.File("src/test/resources/io/proleap/cobol/asg/HelloWorld.cbl");
-io.proleap.cobol.preprocessor.CobolPreprocessor.CobolSourceFormatEnum format = io.proleap.cobol.preprocessor.CobolPreprocessor.CobolSourceFormatEnum.TANDEM;
-io.proleap.cobol.asg.metamodel.Program program = new io.proleap.cobol.asg.runner.impl.CobolParserRunnerImpl().analyzeFile(inputFile, format);
+File inputFile = new File("src/test/resources/io/proleap/cobol/asg/HelloWorld.cbl");
+CobolSourceFormatEnum format = CobolSourceFormatEnum.TANDEM;
+Program program = new CobolParserRunnerImpl().analyzeFile(inputFile, format);
 
 // traverse the AST
-io.proleap.cobol.CobolBaseVisitor<Boolean> visitor = new io.proleap.cobol.CobolBaseVisitor<Boolean>() {
+CobolBaseVisitor<Boolean> visitor = new CobolBaseVisitor<Boolean>() {
   @Override
   public Boolean visitDataDescriptionEntryFormat1(final io.proleap.cobol.CobolParser.DataDescriptionEntryFormat1Context ctx) {
-    io.proleap.cobol.asg.metamodel.data.datadescription.DataDescriptionEntry entry = (io.proleap.cobol.asg.metamodel.data.datadescription.DataDescriptionEntry) program.getASGElementRegistry().getASGElement(ctx);
+    DataDescriptionEntry entry = (DataDescriptionEntry) program.getASGElementRegistry().getASGElement(ctx);
     String name = entry.getName();
 
     return visitChildren(ctx);
   }
 };
 
-for (final io.proleap.cobol.asg.metamodel.CompilationUnit compilationUnit : program.getCompilationUnits()) {
+for (final CompilationUnit compilationUnit : program.getCompilationUnits()) {
   visitor.visit(compilationUnit.getCtx());
 }
 ```
